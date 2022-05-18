@@ -1,70 +1,124 @@
-# Getting Started with Create React App
+## Description
+Space news web application
+## About the project
+News web application written in react language.
+As part of the assignment the API was used
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+[https://api.spaceflightnewsapi.net/v3/documentation](https://api.spaceflightnewsapi.net/v3/documentation)
 
-## Available Scripts
+Part of the code where the search by title or content, sorting by publication date is implemented.
+setSort, setSearchByTitle, setSearchBySummary - methods and variables that store the parameters of the news list obtained from API
+```javascript
+<div className="main-content-line" style={{marginBottom: 0}}>
+    <button id="sort" onClick={() => {
+        if (!sort) {
+            setSort(true)
+        } else {
+            setSort(false);
+        }
+    }}>
+        Сортировка
+    </button>
+    <input placeholder="Поиск" type="text" value={keyWord} onChange={event => {
+        setKeyWord(event.target.value)
+    }}/>
+    <button id="sort" onClick={() => {
+        setMode("searchByTitle");
+        setSearchByTitle();
+    }}>
+        Поиск по заголовку
+    </button>
+    <button id="sort" onClick={() => {
+        setMode("searchBySummary");
+        setSearchBySummary();
+    }}>
+        Поиск по содержанию
+    </button>
+</div>
+```
 
-In the project directory, you can run:
+setSearchByTitle, setSearchBySummary - methods in which the search occurs. When clicked, API-request takes place, from which we get the list of news  
+keyWord - search value  
+sortStr - the variable which defines if the sorted list is needed or not  
+newsCount - a variable responsible for the pagination of pages  
+setNews - list of received news  
+setTotalCount - list used for pagination  
+```javascript
+const setSearchByTitle = () => {
+        const sortStr = sort ? "&_sort=publishedAt" : "";
+        axios
+            .get(
+                "https://api.spaceflightnewsapi.net/v3/articles?title_contains=" + keyWord
+                    + sortStr + "&_start=" + newsCount + "&_limit=6"
+            )
+            .then((res) => {
+                setNews(res.data);
+            })
 
-### `npm start`
+        axios
+            .get("https://api.spaceflightnewsapi.net/v3/articles/count?title_contains=" + keyWord)
+            .then((res) => {
+                setTotalCount(res.data);
+            })
+    }
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+    const setSearchBySummary = () => {
+        const sortStr = sort ? "&_sort=publishedAt" : "";
+        axios
+            .get(
+                "https://api.spaceflightnewsapi.net/v3/articles?summary_contains=" + keyWord
+                    + sortStr + "&_start=" + newsCount + "&_limit=6"
+            )
+            .then((res) => {
+                setNews(res.data);
+            })
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+        axios
+            .get("https://api.spaceflightnewsapi.net/v3/articles/count?summary_contains=" + keyWord)
+            .then((res) => {
+                setTotalCount(res.data);
+            })
+    }
+```
 
-### `npm test`
+The project also includes an adaptive design.
+Almost all the basic css styles were written in percent, there are several media css with media queries for screen width < 800px
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The project implements news bookmarks, they are saved in local storage
+```javascript
+useEffect(() => {
+        if (localStorage.getItem("bookmarks") !== null) {
+            JSON.parse(localStorage.getItem("bookmarks")).includes(Number(id)) ? setIsPinned(true) : setIsPinned(false)
+        }
+        axios
+            .get("https://api.spaceflightnewsapi.net/v3/articles/" + id)
+            .then((res) => {
+                setArticle(res.data);
+            })
+    }, [id])
 
-### `npm run build`
+const handleClickAdd = () => {
+    if (localStorage.getItem("bookmarks") !== null) {
+        temp = JSON.parse(localStorage.getItem("bookmarks"));
+    }
+    temp.push(Number(id));
+    localStorage.setItem("bookmarks", JSON.stringify(temp));
+    setIsPinned(true);
+}
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+const handleClickDel = () => {
+    temp = JSON.parse(localStorage.getItem("bookmarks"));
+    temp.splice(temp.indexOf(Number(id)), 1);
+    localStorage.setItem("bookmarks", JSON.stringify(temp));
+    setIsPinned(false);
+}
+```
+## Project setup
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+npm install
+npm run start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Future scope
+1. Refactoring pagination and bookmarks
